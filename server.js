@@ -93,62 +93,29 @@ app.post("/api/generate-title", async (req, res) => {
 
 
 // ==========================================================
-// 🔥 API CHAT AI (FINAL)
+// 🔥 API CHAT AI
 // ==========================================================
 app.post("/api/ai", async (req, res) => {
-    let { sender, message, reset } = req.body;
-    let limits = readLimits();
+    const { sender, message, reset } = req.body;
 
-    // ===== Fungsi generate userId 3 digit unik =====
-    function generateUserId(limits) {
-        let id;
-        do {
-            const num = Math.floor(100 + Math.random() * 900); // 100–999
-            id = "user" + num;
-        } while (id in limits);
-        return id;
-    }
-
-    // ===== Reset chat memory jika diminta =====
-    if (reset) {
-        if (sender) resetChatMemory(sender);
-        sender = null;
-    }
-
-    // ===== Jika sender baru / tidak ada di limits, buat 3 digit ID =====
-    if (!sender || !(sender in limits)) {
-        sender = generateUserId(limits);
-        limits[sender] = 5; // default limit
-        writeLimits(limits);
-
-        // Kirim balik ke client info ID baru
-        return res.json({
-            reply: `🆕 ID baru dibuat: ${sender}`,
-            remaining: limits[sender],
-            senderId: sender
-        });
-    }
-
-    // ===== Inisialisasi memory chat =====
+    if (reset) resetChatMemory(sender);
     initChatMemory(sender);
 
-    // ===== Jika pesan kosong, return remaining =====
-    if (!message) return res.json({ reply: "", remaining: limits[sender] });
+    const limits = readLimits();
+    if (!(sender in limits)) limits[sender] = 5;
 
-    // ===== Cek limit =====
+    if (message === "") return res.json({ reply: "", remaining: limits[sender] });
+
     if (limits[sender] <= 0) {
         return res.json({ reply: "⚠️ Limit chat kamu habis. Hubungi Admin.", remaining: 0 });
     }
 
-    // Kurangi limit
     limits[sender] -= 1;
     writeLimits(limits);
 
-    // Simpan pesan user
     chatMemory[sender].push({ role: "user", content: message });
     const recentMessages = chatMemory[sender].slice(-20);
 
-    // ===== List model AI =====
     const preferredModels = [
         "moonshotai/kimi-k2-instruct",
         "moonshotai/kimi-k2-instruct-0905",
@@ -156,55 +123,59 @@ app.post("/api/ai", async (req, res) => {
         "llama-3.3-70b-versatile",
         "meta-llama/llama-4-maverick-17b-128e-instruct"
     ];
+for (const model of preferredModels) {
+    try {
+        console.log(`🔄 Mencoba model: ${model}`);
 
-    for (const model of preferredModels) {
-        try {
-            console.log(`🔄 Mencoba model: ${model}`);
-
-            const response = await axios.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                {
-                    model,
-                    messages: recentMessages,
-                    temperature: 0.9,
-                    max_tokens: 8000,
-                    stream: false
+        const response = await axios.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+                model,
+                messages: recentMessages,
+                temperature: 0.9,
+                max_tokens: 8000,
+                stream: false
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+                    "Content-Type": "application/json"
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    timeout: 25000
-                }
-            );
+                timeout: 25000
+            }
+        );
 
-            console.log(`✅ Model berhasil: ${model}`);
-            const reply = response.data.choices[0].message.content.trim();
-            chatMemory[sender].push({ role: "assistant", content: reply });
+        // 🟢 Jika sukses — log model berhasil
+        console.log(`✅ Model berhasil: ${model}`);
 
-            return res.json({
-                reply,
-                remaining: limits[sender],
-                model_used: model
-            });
+        const reply = response.data.choices[0].message.content.trim();
+        chatMemory[sender].push({ role: "assistant", content: reply });
 
-        } catch (err) {
-            console.log(`❌ Model gagal ${model}:`, err.response?.status || err.message);
-            if (err.response?.status === 429) continue;
-            await new Promise(r => setTimeout(r, 2000));
-        }
+        return res.json({
+            reply,
+            remaining: limits[sender],
+            model_used: model   // optional: biar tahu model mana yg dipakai
+        });
+
+    } catch (err) {
+        console.log(`❌ Model gagal ${model}:`, err.response?.status || err.message);
+
+        // Kalau error 429 → langsung lanjut model lain
+        if (err.response?.status === 429) continue;
+
+        // Kalau error lain → delay dulu biar ga spam server
+        await new Promise(r => setTimeout(r, 2000));
     }
+}
 
-    // ===== Fallback jika semua model gagal =====
     const fallback = [
         "Server lagi penuh, tunggu sebentar...",
         "Lagi error, coba lagi ya...",
         "Tahan bentar, server padat..."
     ];
+
     res.json({ reply: fallback[Math.floor(Math.random() * fallback.length)], remaining: limits[sender] });
 });
-
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
