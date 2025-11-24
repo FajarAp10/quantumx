@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import { chatMemory, initChatMemory, resetChatMemory } from "./memory.js";
 
+
 dotenv.config();
 const app = express();
 app.use(cors());
