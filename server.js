@@ -108,8 +108,8 @@ app.post("/api/ai", async (req, res) => {
     const recentMessages = chatMemory[sender].slice(-20);
 
     const preferredModels = [
-        "moonshotai/kimi-k2-instruct-0905",
         "moonshotai/kimi-k2-instruct",
+        "moonshotai/kimi-k2-instruct-0905",
         "llama-3.1-8b-instant",
         "llama-3.3-70b-versatile",
         "meta-llama/llama-4-maverick-17b-128e-instruct"
