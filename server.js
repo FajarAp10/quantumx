@@ -119,7 +119,7 @@ app.post("/api/image", async (req, res) => {
         const response = await axios.post(
             "https://api.replicate.com/v1/predictions",
             {
-                version: "db21e45a3e9e5110a3f1a7b14f3b0d5b8ef3e77f43d113c5e78839f5e7f42946", // Stable Diffusion v1.5
+                version: "b3d14e1cd1f9470bbb0bb68cac48e5f483e5be309551992cc33dc30654a82bb7", // Stable Diffusion v1.5
                 input: { prompt }
             },
             {
