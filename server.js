@@ -170,7 +170,6 @@ for (const model of preferredModels) {
 
     const fallback = [
         "Server lagi penuh, tunggu sebentar...",
-        "Lagi error, coba lagi ya...",
         "Tahan bentar, server padat..."
     ];
 
