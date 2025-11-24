@@ -168,7 +168,7 @@ for (const model of preferredModels) {
     res.json({ reply: fallback[Math.floor(Math.random() * fallback.length)], remaining: limits[sender] });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
