@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumX — AI Chat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Inter", Arial,sans-serif;}
+body{background:#0d0d0d;color:#e6e6e6;display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:250px;background:#161616;padding:20px;border-right:1px solid #262626;display:flex;flex-direction:column;}
+.sidebar h2{font-size:20px;font-weight:600;margin-bottom:18px;}
+#limitCounter{font-weight:400;font-size:14px;color:#3b82f6;margin-left:6px;}
+.new-chat{background:#111;padding:12px;border-radius:10px;cursor:pointer;border:1px solid #262626;transition:.2s;font-size:14px;margin-bottom:12px;}
+.new-chat:hover{background:#1a1a1a;}
+.chat-list{flex:1;overflow-y:auto;margin-top:10px;}
+.chat-item{padding:10px;border-radius:8px;background:#111;margin-bottom:8px;cursor:pointer;border:1px solid #262626;transition:.2s;}
+.chat-item:hover{background:#1a1a1a;}
+.chat-wrapper{flex:1; display:flex; flex-direction:column; background:#0d0d0d; position:relative; min-height:0;}
+#chat{flex:1 1 auto; padding:22px; overflow-y:auto; display:flex; flex-direction:column; position:relative; min-height:0;}
+.empty-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#7a7a7a;font-size:32px;text-align:center;line-height:1.4;pointer-events:none;opacity:0.7;transition:opacity .3s;}
+.msg{max-width:75%;padding:0;margin-bottom:14px;display:flex;flex-direction:column;align-self:flex-start;opacity:0;transform:translateY(20px);animation:fadeInUp 0.3s forwards;}
+.user{align-self:flex-end;}
+.bot{align-self:flex-start;}
+.msg-content{padding:14px 18px;line-height:1.65;font-size:15px;border-radius:14px;border:1px solid #262626;background:#111;white-space:pre-wrap;display:inline-block;max-width:100%;overflow-x:auto;word-break:break-word;}
+.user .msg-content{background:#292929;border:1px solid #333;border-radius:6px 14px 14px 6px;}
+.bot .msg-content{background:#141414;border-radius:14px 6px 6px 14px;}
+@keyframes fadeInUp{to{opacity:1;transform:translateY(0);}}
+.input-area{padding:12px 16px;background:#0d0d0d;border-top:1px solid #1a1a1a;display:flex;align-items:center;gap:8px;position:sticky; bottom:0; z-index:10;}
+.input-area input{flex:1;padding:12px 14px;border-radius:30px;border:1px solid #262626;background:#111;color:white;font-size:15px;outline:none;}
+.input-area input:focus{border-color:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,0.5);}
+.input-area button{background:#3b82f6;border:none;width:44px;height:44px;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.input-area button:hover{background:#4a8fff;transform:scale(1.1);}
+.mobile-topbar{display:none;align-items:center;gap:12px;padding:12px 16px;background:#161616;border-bottom:1px solid #262626;}
+.mobile-title{font-size:18px;font-weight:600;color:#e6e6e6;}
+.mobile-menu-btn{font-size:24px;background:#111;color:white;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;}
+.sidebar.overlay{display:none;position:fixed;top:0;left:-300px;height:100%;z-index:100;background:#161616;padding:20px;border-right:1px solid #262626;transition:left .3s;}
+.sidebar.show{left:0;}
+.sidebar-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;z-index:50;}
+/* ===========================
+   POPUP HAPUS CUSTOM
+=========================== */
+.popup-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-box {
+  background: #111;
+  padding: 22px;
+  width: 90%;
+  max-width: 340px;
+  border-radius: 14px;
+  border: 1px solid #333;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  text-align: center;
+  animation: popupFade .25s ease;
+}
+
+.popup-box h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.popup-box p {
+  font-size: 14px;
+  margin-bottom: 18px;
+  color: #ccc;
+}
+
+.popup-btns {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.popup-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  font-size: 14px;
+}
+
+.popup-cancel {
+  background: #333;
+  color: white;
+}
+
+.popup-delete {
+  background: #e53935;
+  color: white;
+}
+
+@keyframes popupFade {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.login-btn{
+  background:#3b82f6;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  color:white;
+  font-size:14px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.login-btn:hover{
+  background:#4a8fff;
+}
+
+@media(max-width:700px){
+  body{flex-direction:column;height:100vh;}
+  .sidebar{display:none;}
+  .sidebar.overlay{display:block;}
+  .mobile-topbar{display:flex;}
+  .chat-wrapper{min-height:0;}
+  #chat{min-height:0;}
+  .input-area{position:sticky; bottom:0;}
+
+  /* 🔥 FIX BUBBLE CHAT TERLALU SEMPIT DI HP */
+  .msg{max-width:95% !important;}
+}
+
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2 style="display:flex; align-items:center; justify-content:space-between;">
+  <span>QuantumX <span id="limitCounter">(5)</span></span>
+  <button id="loginBtnDesktop" class="login-btn">Login</button>
+</h2>
+
+  <div class="new-chat">+ Obrolan Baru</div>
+  <div class="chat-list"></div>
+</div>
+
+<div class="chat-wrapper">
+  <div class="mobile-topbar">
+    <button id="mobileMenuBtn" class="mobile-menu-btn">⋮</button>
+    <span class="mobile-title" style="flex:1;">QuantumX</span>
+<button id="loginBtnMobile" class="login-btn">Admin</button>
+
+  </div>
+
+  <div id="chat">
+    <div class="empty-text">QuantumX di sini, ada yang bisa dibantu?</div>
+  </div>
+
+  <div class="input-area">
+    <input id="msg" placeholder="Ketik pesan..." />
+    <button id="sendBtn">➤</button>
+  </div>
+</div>
+
+<div class="sidebar overlay">
+<h2>QuantumX <span id="limitCounterOverlay">(5)</span></h2>
+  <div class="new-chat">+ Chat Baru</div>
+  <div class="chat-list"></div>
+</div>
+<div class="sidebar-backdrop"></div>
+
+<div id="deletePopup" class="popup-backdrop">
+  <div class="popup-box">
+    <h3>Hapus Obrolan?</h3>
+    <p>Obrolan ini akan hilang.</p>
+
+    <div class="popup-btns">
+      <button class="popup-btn popup-cancel" onclick="closePopup()">Batal</button>
+      <button class="popup-btn popup-delete" id="confirmDeleteBtn">Hapus</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const chatBox = document.getElementById("chat");
+const input = document.getElementById("msg");
+const sendBtn = document.getElementById("sendBtn");
+const chatLists = document.querySelectorAll(".chat-list");
+const limitCounter = document.getElementById("limitCounter");
+const limitCounterOverlay = document.getElementById("limitCounterOverlay");
+
+// ===== STORAGE =====
+let chatMemory = JSON.parse(localStorage.getItem("chatMemory")||"{}");
+let chatNames = JSON.parse(localStorage.getItem("chatNames")||"{}");
+
+// global senderId (limit global tetap satu user)
+let senderId = localStorage.getItem("senderId") || "web-user";
+localStorage.setItem("senderId", senderId);
+
+// current chat yang aktif (bisa pindah-pindah)
+let currentChatId = null;
+
+// ===== INIT =====
+function initChatMemory(chatId){
+  if(!chatMemory[chatId]) chatMemory[chatId]=[];
+  if(!chatNames[chatId]) chatNames[chatId]="Obrolan Baru";
+}
+
+function updateLimitUI(limit){
+  if(limitCounter) limitCounter.textContent=`(${limit})`;
+  if(limitCounterOverlay) limitCounterOverlay.textContent=`(${limit})`;
+}
+
+// ===== ADD MESSAGE =====
+function addMessage(type,text){
+  const empty=chatBox.querySelector(".empty-text");
+  if(empty) empty.remove();
+  const msg=document.createElement("div");
+  msg.classList.add("msg",type);
+  const msgContent=document.createElement("div");
+  msgContent.classList.add("msg-content");
+  msg.appendChild(msgContent);
+  chatBox.appendChild(msg);
+  chatBox.scrollTop=chatBox.scrollHeight;
+  if(type==="bot"){typeMessage(msgContent,text);}else{msgContent.textContent=text;}
+}
+
+async function typeMessage(msgContent,text){
+  const THRESHOLD=40;
+  msgContent.textContent="";
+  const animLength=Math.min(text.length,THRESHOLD);
+  for(let i=0;i<animLength;i++){
+    msgContent.textContent+=text[i];
+    chatBox.scrollTop=chatBox.scrollHeight;
+    await new Promise(r=>setTimeout(r,10+Math.random()*2));
+  }
+  if(text.length>THRESHOLD){msgContent.textContent+=text.slice(THRESHOLD);chatBox.scrollTop=chatBox.scrollHeight;}
+}
+
+// ===== SEND MSG =====
+
+async function sendMsg(){
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = "";
+
+  if (!currentChatId) {
+    const newId = "chat-" + Date.now();
+    currentChatId = newId;
+    initChatMemory(currentChatId);
+
+    chatMemory[currentChatId].push({ role:"user", content:text });
+
+    // 🔥 Generate judul otomatis
+    try {
+        const resTitle = await fetch("http://localhost:3000/api/generate-title", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({ message:text })
+        });
+        const dataTitle = await resTitle.json();
+        chatNames[currentChatId] = dataTitle.title || "Obrolan Baru";
+    } catch {
+        chatNames[currentChatId] = "Obrolan Baru";
+    }
+}
+ else {
+    initChatMemory(currentChatId);
+    chatMemory[currentChatId].push({role:"user", content:text});
+    if(chatNames[currentChatId]==="Obrolan Baru"){
+      chatNames[currentChatId] = text || "Obrolan Baru";
+    }
+  }
+
+  addMessage("user", text);
+  saveMemory(); // simpan user message
+  renderChatList();
+
+  // ===== BOT RESPONSE =====
+  const botMsg = document.createElement("div");
+  botMsg.classList.add("msg","bot");
+  const botContent = document.createElement("div");
+  botContent.classList.add("msg-content");
+  botContent.textContent = "…";
+  botMsg.appendChild(botContent);
+  chatBox.appendChild(botMsg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try{
+    const res = await fetch("http://localhost:3000/api/ai", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({sender: senderId, message: text})
+    });
+    const data = await res.json();
+    
+    botMsg.remove();
+    addMessage("bot", data.reply);
+
+    // **simpan bot reply ke chatMemory**
+    chatMemory[currentChatId].push({role:"bot", content:data.reply});
+    saveMemory();  // simpan ke localStorage
+
+    if(data.remaining !== undefined) updateLimitUI(data.remaining);
+  } catch(e){
+    botMsg.remove();
+    addMessage("bot", "❌ Gagal terhubung ke server.");
+  }
+}
+
+
+
+function renderChatList() {
+  chatLists.forEach(list => {
+    list.innerHTML = "";
+
+    const ids = Object.keys(chatMemory).reverse();
+
+    if (ids.length === 0) {
+      list.innerHTML = `<div class="empty-chat">Belum ada obrolan</div>`;
+      return;
+    }
+
+    ids.forEach(chatId => {
+      const item = document.createElement("div");
+      item.classList.add("chat-item");
+      item.style.display = "flex";
+      item.style.alignItems = "center";
+      item.style.justContent = "space-between";
+      item.style.padding = "10px 12px";
+      item.style.borderRadius = "8px";
+      item.style.cursor = "pointer";
+
+      // Nama Chat
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = chatNames[chatId] || "Obrolan Baru";
+      nameSpan.style.flex = "1";
+
+      // Tombol Hapus
+      const delBtn = document.createElement("button");
+      delBtn.innerHTML = "🗑";
+      delBtn.style.marginLeft = "8px";
+      delBtn.style.background = "transparent";
+      delBtn.style.border = "none";
+      delBtn.style.color = "#ff4d4d";
+      delBtn.style.cursor = "pointer";
+      delBtn.style.fontSize = "15px";
+
+      // Klik load chat
+      nameSpan.addEventListener("click", () => loadChat(chatId));
+
+      // Popup hapus
+      delBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showPopup(chatId);
+      });
+
+      item.appendChild(nameSpan);
+      item.appendChild(delBtn);
+      list.appendChild(item);
+    });
+  });
+}
+
+
+let deleteTargetChat = null;
+
+function showPopup(chatId) {
+  deleteTargetChat = chatId;
+  document.getElementById("deletePopup").style.display = "flex";
+}
+
+function closePopup() {
+  deleteTargetChat = null;
+  document.getElementById("deletePopup").style.display = "none";
+}
+
+document.getElementById("confirmDeleteBtn").onclick = () => {
+  if (!deleteTargetChat) return;
+
+  delete chatMemory[deleteTargetChat];
+  delete chatNames[deleteTargetChat];
+
+  if (currentChatId === deleteTargetChat) currentChatId = null;
+
+  saveMemory();
+  renderChatList();
+
+  chatBox.innerHTML = `<div class="empty-text">QuantumX di sini, ada yang bisa dibantu?</div>`;
+
+  closePopup();
+};
+
+
+
+// ===== LOAD CHAT =====
+function loadChat(chatId){
+  currentChatId = chatId;
+  chatBox.innerHTML="";
+  initChatMemory(chatId);
+  if(chatMemory[chatId].length){
+    chatMemory[chatId].forEach(m=>addMessage(m.role==="user"?"user":"bot",m.content));
+  } else {
+    chatBox.innerHTML=`<div class="empty-text">QuantumX di sini, ada yang bisa dibantu?</div>`;
+  }
+  fetchLimit();
+}
+
+// ===== MOBILE SIDEBAR =====
+const mobileMenuBtn=document.getElementById("mobileMenuBtn");
+const overlaySidebar=document.querySelector(".sidebar.overlay");
+const backdrop=document.querySelector(".sidebar-backdrop");
+mobileMenuBtn.addEventListener("click",()=>{overlaySidebar.classList.add("show");backdrop.style.display="block";});
+backdrop.addEventListener("click",()=>{overlaySidebar.classList.remove("show");backdrop.style.display="none";});
+document.querySelectorAll(".new-chat").forEach(btn => {
+  btn.addEventListener("click", async () => {
+
+    // reset server memory
+    try {
+      await fetch("http://localhost:3000/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender: senderId, message: "", reset: true })
+      });
+    } catch {}
+
+    // 🟢 FIX TERPENTING → reset id chat
+    currentChatId = null;
+
+    // tampilkan halaman kosong
+    chatBox.innerHTML = `<div class="empty-text">QuantumX di sini, ada yang bisa dibantu?</div>`;
+  });
+});
+
+document.getElementById("loginBtnDesktop").onclick = () => {
+  window.location.href = "login.html";
+};
+
+document.getElementById("loginBtnMobile").onclick = () => {
+  window.location.href = "login.html";
+};
+
+
+// ===== FETCH LIMIT =====
+async function fetchLimit(){
+  try{
+    const res = await fetch("http://localhost:3000/api/ai", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({sender:senderId,message:""})
+    });
+    const data = await res.json();
+    if(data.remaining!==undefined) updateLimitUI(data.remaining);
+  }catch(e){console.log("❌ Gagal fetch limit:", e);}
+}
+
+// ===== SAVE MEMORY =====
+function saveMemory(){
+  localStorage.setItem("chatMemory", JSON.stringify(chatMemory));
+  localStorage.setItem("chatNames", JSON.stringify(chatNames));
+  localStorage.setItem("senderId", senderId);
+}
+
+// ===== INIT =====
+renderChatList();
+if(Object.keys(chatMemory).length>0){
+  loadChat(Object.keys(chatMemory)[0]);
+} else {
+  currentChatId = null;
+}
+sendBtn.addEventListener("click",sendMsg);
+input.addEventListener("keydown",(e)=>{if(e.key==="Enter") sendMsg();});
+fetchLimit();
+</script>
+
+</body>
+</html>

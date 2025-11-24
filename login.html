@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumX Admin Login</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Inter", Arial, sans-serif;
+}
+
+body{
+  background:#0d0d0d;
+  color:white;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+/* Container */
+.login-box{
+  width:100%;
+  max-width:380px;
+  background:#151515;
+  padding:28px;
+  border-radius:16px;
+  border:1px solid #222;
+  box-shadow:0 0 25px rgba(0,0,0,0.4);
+  animation:fadeIn .6s ease-out;
+}
+
+/* Title */
+.title{
+  text-align:center;
+  font-size:26px;
+  font-weight:600;
+  margin-bottom:4px;
+}
+
+.sub{
+  text-align:center;
+  font-size:14px;
+  color:#888;
+  margin-bottom:24px;
+}
+
+/* Input */
+input{
+  width:100%;
+  padding:12px 14px;
+  margin-bottom:12px;
+  background:#0f0f0f;
+  border:1px solid #333;
+  border-radius:10px;
+  color:white;
+  font-size:15px;
+  transition:.2s;
+}
+input:focus{
+  border-color:#3b82f6;
+  box-shadow:0 0 8px rgba(59,130,246,0.5);
+  outline:none;
+}
+
+/* Button */
+button{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  background:#3b82f6;
+  color:white;
+  cursor:pointer;
+  transition:.2s;
+}
+button:hover{
+  background:#4a8fff;
+  transform:scale(1.03);
+}
+
+/* Fade animation */
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* Mobile tweak */
+@media(max-width:480px){
+  .login-box{
+    padding:22px;
+  }
+  .title{
+    font-size:22px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="login-box">
+  <div class="title">QuantumX</div>
+  <div class="sub">Admin Login</div>
+
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="login()">Masuk</button>
+</div>
+
+
+<script>
+function login(){
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
+
+  if(!user || !pass){
+    alert("Isi username dan password!");
+    return;
+  }
+
+  // ❗ Login admin lokal
+  if(user === "FajarAdit" && pass === "Fajar10"){
+    localStorage.setItem("admin", "true");
+    window.location.href = "dashboard.html";
+  } else {
+    alert("Login salah!");
+  }
+}
+</script>
+
+</body>
+</html>
