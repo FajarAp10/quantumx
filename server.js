@@ -91,6 +91,22 @@ app.post("/api/generate-title", async (req, res) => {
     }
 });
 
+// Hapus user dari limits.json
+app.post("/api/delete-user", (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.json({ success: false, message: "ID wajib diisi." });
+
+    const limits = readLimits();
+
+    if (id in limits) {
+        delete limits[id];        // hapus entry
+        writeLimits(limits);
+        return res.json({ success: true, message: `${id} berhasil dihapus!` });
+    } else {
+        return res.json({ success: false, message: "User tidak ditemukan." });
+    }
+});
+
 
 // ==========================================================
 // 🔥 API CHAT AI
