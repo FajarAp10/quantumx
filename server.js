@@ -107,6 +107,39 @@ app.post("/api/delete-user", (req, res) => {
     }
 });
 
+// ==========================================================
+// 🔥 API GENERATE IMAGE
+// ==========================================================
+app.post("/api/image", async (req, res) => {
+    const { sender, prompt } = req.body;
+
+    if (!prompt) return res.json({ success: false, message: "Prompt wajib diisi." });
+
+    try {
+        const response = await axios.post(
+            "https://api.groq.com/openai/v1/images/generations",
+            {
+                model: "dall-e-3",      // model gambar terbaru
+                prompt,
+                size: "1024x1024"       // bisa 256x256, 512x512, 1024x1024
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        const imageUrl = response.data.data[0].url;
+        res.json({ success: true, url: imageUrl });
+
+    } catch (err) {
+        console.error("❌ Generate image gagal:", err.response?.data || err.message);
+        res.json({ success: false, message: "Gagal generate gambar." });
+    }
+});
+
 
 // ==========================================================
 // 🔥 API CHAT AI
