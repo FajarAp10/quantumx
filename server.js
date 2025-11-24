@@ -181,7 +181,7 @@ for (const model of preferredModels) {
         // Kalau error 429 → langsung lanjut model lain
         if (err.response?.status === 429) continue;
 
-        // Kalau error lain → delay dulu biar ga spam serverr
+        // Kalau error lain → delay dulu biar ga spam server
         await new Promise(r => setTimeout(r, 2000));
     }
 }
@@ -199,4 +199,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
-
