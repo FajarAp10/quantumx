@@ -20,7 +20,7 @@ export function resetChatMemory(sender, mode = "dark") {
     }
 }
 
-// GANTI prompt aktif ke mode lain
+// GANTI prompt aktif ke mode lainn
 export function switchSystemPrompt(sender, mode = "dark") {
     if (chatMemory[sender] && chatMemory[sender].length > 0) {
         const systemIndex = chatMemory[sender].findIndex(msg => msg.role === "system");
@@ -32,3 +32,4 @@ export function switchSystemPrompt(sender, mode = "dark") {
         }
     }
 }
+
