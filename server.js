@@ -108,7 +108,7 @@ app.post("/api/delete-user", (req, res) => {
 });
 
 // ==========================================================
-// 🔥 API GENERATE IMAGE (pakai OpenAI DALL·E 3 free trial)
+// 🔥 API GENERATE IMAGE (Replicate Stable Diffusion)
 // ==========================================================
 app.post("/api/image", async (req, res) => {
     const { sender, prompt } = req.body;
@@ -117,21 +117,25 @@ app.post("/api/image", async (req, res) => {
 
     try {
         const response = await axios.post(
-            "https://api.openai.com/v1/images/generations",
+            "https://api.replicate.com/v1/predictions",
             {
-                model: "dall-e-3",
-                prompt,
-                size: "1024x1024"
+                version: "db21e45a3e9e5110a3f1a7b14f3b0d5b8ef3e77f43d113c5e78839f5e7f42946", // Stable Diffusion v1.5
+                input: { prompt }
             },
             {
                 headers: {
-                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                    Authorization: `Token ${process.env.REPLICATE_API_KEY}`,
                     "Content-Type": "application/json"
                 }
             }
         );
 
-        const imageUrl = response.data.data[0].url;
+        // Ambil URL hasil generate
+        const prediction = response.data;
+        const imageUrl = prediction.output?.[0] || null;
+
+        if (!imageUrl) return res.json({ success: false, message: "Gagal generate gambar." });
+
         res.json({ success: true, url: imageUrl });
 
     } catch (err) {
@@ -139,6 +143,7 @@ app.post("/api/image", async (req, res) => {
         res.json({ success: false, message: "Gagal generate gambar." });
     }
 });
+
 
 // ==========================================================
 // 🔥 API CHAT AI
