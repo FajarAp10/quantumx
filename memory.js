@@ -1,32 +1,34 @@
 import { quantumXPrompt } from "./quantumPrompt.js";
-import { normalPrompt } from "./normalPrompt.js"; // pastikan ada file ini
+import { normalPrompt } from "./normalPrompt.js";
 
 export const chatMemory = {};
 
-export function initChatMemory(id) {
+export function initChatMemory(id, mode = "dark") {
     if (!chatMemory[id]) {
-        chatMemory[id] = []; // jangan push prompt otomatis
+        // pakai system prompt sesuai mode
+        chatMemory[id] = [mode === "dark" ? quantumXPrompt : normalPrompt];
     }
 }
 
 // RESET memory chat (kecuali system prompt)
-export function resetChatMemory(sender) {
+export function resetChatMemory(sender, mode = "dark") {
     if (chatMemory[sender]) {
         const systemPrompt = chatMemory[sender].find(msg => msg.role === "system");
         chatMemory[sender] = systemPrompt ? [systemPrompt] : [];
+        // override system prompt sesuai mode baru
+        chatMemory[sender][0] = mode === "dark" ? quantumXPrompt : normalPrompt;
     }
 }
 
-// APPLY PROMPT SESUAI MODE
-export function applyPromptByMode(chatId, mode = "dark") {
-    if (!chatId) return;
-
-    initChatMemory(chatId);
-
-    // hapus system prompt lama
-    chatMemory[chatId] = chatMemory[chatId].filter(m => m.role !== "system");
-
-    // inject prompt sesuai mode
-    if (mode === "dark") chatMemory[chatId].unshift(quantumXPrompt);
-    else if (mode === "normal") chatMemory[chatId].unshift(normalPrompt);
+// GANTI prompt aktif ke mode lain
+export function switchSystemPrompt(sender, mode = "dark") {
+    if (chatMemory[sender] && chatMemory[sender].length > 0) {
+        const systemIndex = chatMemory[sender].findIndex(msg => msg.role === "system");
+        if (systemIndex !== -1) {
+            chatMemory[sender][systemIndex] = mode === "dark" ? quantumXPrompt : normalPrompt;
+        } else {
+            // kalau belum ada system prompt, tambahkan
+            chatMemory[sender].unshift(mode === "dark" ? quantumXPrompt : normalPrompt);
+        }
+    }
 }
