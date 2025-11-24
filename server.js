@@ -108,7 +108,7 @@ app.post("/api/delete-user", (req, res) => {
 });
 
 // ==========================================================
-// 🔥 API GENERATE IMAGE
+// 🔥 API GENERATE IMAGE (pakai OpenAI DALL·E 3 free trial)
 // ==========================================================
 app.post("/api/image", async (req, res) => {
     const { sender, prompt } = req.body;
@@ -117,15 +117,15 @@ app.post("/api/image", async (req, res) => {
 
     try {
         const response = await axios.post(
-            "https://api.groq.com/openai/v1/images/generations",
+            "https://api.openai.com/v1/images/generations",
             {
-                model: "dall-e-3",      // model gambar terbaru
+                model: "dall-e-3",
                 prompt,
-                size: "1024x1024"       // bisa 256x256, 512x512, 1024x1024
+                size: "1024x1024"
             },
             {
                 headers: {
-                    Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
                     "Content-Type": "application/json"
                 }
             }
@@ -139,7 +139,6 @@ app.post("/api/image", async (req, res) => {
         res.json({ success: false, message: "Gagal generate gambar." });
     }
 });
-
 
 // ==========================================================
 // 🔥 API CHAT AI
