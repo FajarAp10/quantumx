@@ -114,10 +114,10 @@ app.post("/api/delete-user", (req, res) => {
 // 🔥 API CHAT AI
 // ==========================================================
 app.post("/api/ai", async (req, res) => {
-    const { sender, message, reset } = req.body;
+    const { sender, message, reset, mode } = req.body;
 
-    if (reset) resetChatMemory(sender);
-    initChatMemory(sender);
+    if (reset) resetChatMemory(sender, mode); // reset chat memory sesuai mode
+    initChatMemory(sender, mode);
 
     const limits = readLimits();
     if (!(sender in limits)) limits[sender] = 5;
