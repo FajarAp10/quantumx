@@ -107,7 +107,7 @@ app.post("/api/ai", async (req, res) => {
     if (message === "") return res.json({ reply: "", remaining: limits[sender] });
 
     if (limits[sender] <= 0) {
-        return res.json({ reply: "⚠️ Limit chat kamu sudah habis.", remaining: 0 });
+        return res.json({ reply: "⚠️ Limit chat kamu habis. Hubungi Admin.", remaining: 0 });
     }
 
     limits[sender] -= 1;
