@@ -107,42 +107,6 @@ app.post("/api/delete-user", (req, res) => {
     }
 });
 
-// ==========================================================
-// 🔥 API GENERATE IMAGE (Replicate Stable Diffusion)
-// ==========================================================
-app.post("/api/image", async (req, res) => {
-    const { sender, prompt } = req.body;
-
-    if (!prompt) return res.json({ success: false, message: "Prompt wajib diisi." });
-
-    try {
-        const response = await axios.post(
-            "https://api.replicate.com/v1/predictions",
-            {
-                version: "b3d14e1cd1f9470bbb0bb68cac48e5f483e5be309551992cc33dc30654a82bb7", // Stable Diffusion v1.5
-                input: { prompt }
-            },
-            {
-                headers: {
-                    Authorization: `Token ${process.env.REPLICATE_API_KEY}`,
-                    "Content-Type": "application/json"
-                }
-            }
-        );
-
-        // Ambil URL hasil generate
-        const prediction = response.data;
-        const imageUrl = prediction.output?.[0] || null;
-
-        if (!imageUrl) return res.json({ success: false, message: "Gagal generate gambar." });
-
-        res.json({ success: true, url: imageUrl });
-
-    } catch (err) {
-        console.error("❌ Generate image gagal:", err.response?.data || err.message);
-        res.json({ success: false, message: "Gagal generate gambar." });
-    }
-});
 
 
 // ==========================================================
