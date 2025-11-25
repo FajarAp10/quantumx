@@ -151,7 +151,7 @@ for (const model of preferredModels) {
                 model,
                 messages: recentMessages,
                 temperature: 0.9,
-                max_tokens: 10000,
+                max_tokens: 7000,
                 stream: false
             },
             {
