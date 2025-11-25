@@ -120,7 +120,7 @@ app.post("/api/ai", async (req, res) => {
     initChatMemory(sender, mode);
 
     const limits = readLimits();
-    if (!(sender in limits)) limits[sender] = 5;
+    if (!(sender in limits)) limits[sender] = 10;
 
     if (message === "") return res.json({ reply: "", remaining: limits[sender] });
 
@@ -151,7 +151,7 @@ for (const model of preferredModels) {
                 model,
                 messages: recentMessages,
                 temperature: 0.9,
-                max_tokens: 8000,
+                max_tokens: 10000,
                 stream: false
             },
             {
