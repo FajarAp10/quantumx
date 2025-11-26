@@ -9,7 +9,7 @@ export function initChatMemory(id, mode = "dark") {
   }
 }
 
-export function resetChatMemory(sender, mode = "dark") {
+export function resetChatMemory(sender, mode = "normal") {
   if (!chatMemory[sender]) chatMemory[sender] = [];
   chatMemory[sender] = [mode === "dark" ? quantumXPrompt : normalPrompt];
 }
