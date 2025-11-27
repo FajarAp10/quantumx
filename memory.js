@@ -3,7 +3,7 @@ import { normalPrompt } from "./normalPrompt.js";
 
 export const chatMemory = {};
 
-export function initChatMemory(id, mode = "dark") {
+export function initChatMemory(id, mode = "normal") {
   if (!chatMemory[id]) {
     chatMemory[id] = [mode === "dark" ? quantumXPrompt : normalPrompt];
   }
@@ -13,3 +13,4 @@ export function resetChatMemory(sender, mode = "normal") {
   if (!chatMemory[sender]) chatMemory[sender] = [];
   chatMemory[sender] = [mode === "dark" ? quantumXPrompt : normalPrompt];
 }
+
