@@ -128,31 +128,36 @@ app.post("/api/ai-image", async (req, res) => {
     limits[sender] -= 1;
     writeLimits(limits);
 
+    // Simpan gambar dan dapatkan URL publik
     const filename = `img_${Date.now()}.png`;
-    const imagePath = saveBase64Image(image, filename);
-    if (!imagePath) return res.json({ reply: "❌ Format gambar salah.", remaining: limits[sender] });
+    const imageUrl = saveBase64Image(image, filename);
+    if (!imageUrl) return res.json({ reply: "❌ Format gambar salah.", remaining: limits[sender] });
 
     chatMemory[sender].push({ role: "user", content: message || "[User kirim gambar]", image });
 
     try {
-        const localPath = path.join(uploadsDir, filename);
-
-        // === GPT-4V Vision terbaru ===
+        // === GPT-4V Vision terbaru: gunakan URL gambar ===
         const response = await openai.responses.create({
             model: "gpt-4.1-mini",
-            reasoning: { effort: "medium" }, // opsional
+            reasoning: { effort: "medium" },
             input: [
                 {
                     role: "user",
                     content: [
-                        { type: "input_text", text: message || "Buat caption singkat untuk gambar ini." },
-                        { type: "input_image", image_data: fs.readFileSync(localPath, "base64") }
+                        {
+                            type: "input_text",
+                            text: message || "Buat caption singkat untuk gambar ini."
+                        },
+                        {
+                            type: "input_image",
+                            image_url: imageUrl
+                        }
                     ]
                 }
             ]
         });
 
-        // Ambil jawaban
+        // Ambil teks jawaban
         let reply = "";
         if (response.output?.length) {
             for (const msg of response.output) {
@@ -239,6 +244,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
