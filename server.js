@@ -108,6 +108,39 @@ app.post("/api/delete-user", (req, res) => {
     }
 });
 
+app.post("/api/ai-image", async (req, res) => {
+    const { sender, message, image } = req.body;
+
+    if (!image) return res.json({ reply: "❌ Tidak ada gambar yang dikirim." });
+
+    // inisialisasi memory
+    initChatMemory(sender, "image");
+
+    // cek limit
+    const limits = readLimits();
+    if (!(sender in limits)) limits[sender] = 10;
+    if (limits[sender] <= 0) return res.json({ reply: "⚠️ Limit habis.", remaining: 0 });
+    limits[sender] -= 1;
+    writeLimits(limits);
+
+    // simpan message user
+    chatMemory[sender].push({ role: "user", content: message || "[User hanya mengirim gambar]", image });
+
+    try {
+        const response = await axios.post(
+            "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+            { inputs: image },
+            { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
+        );
+
+        const reply = response.data[0].generated_text;
+        chatMemory[sender].push({ role: "assistant", content: reply });
+        res.json({ reply, remaining: limits[sender], model_used: "HF vit-gpt2" });
+
+    } catch (err) {
+        res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
+    }
+});
 
 
 // ==========================================================
