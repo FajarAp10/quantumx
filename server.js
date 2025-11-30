@@ -5,6 +5,8 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 import { chatMemory, initChatMemory, resetChatMemory } from "./memory.js";
+import { Configuration, OpenAIApi } from "openai";
+
 
 
 dotenv.config();
@@ -107,9 +109,16 @@ app.post("/api/delete-user", (req, res) => {
         return res.json({ success: false, message: "User tidak ditemukan." });
     }
 });
+
+
+// === Setup OpenAI ===
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// ==========================================================
+// 🔥 API IMAGE (OpenAI GPT-4V)
+// ==========================================================
 app.post("/api/ai-image", async (req, res) => {
     const { sender, message, image } = req.body;
-
     if (!image) return res.json({ reply: "❌ Tidak ada gambar yang dikirim." });
 
     initChatMemory(sender, "image");
@@ -123,34 +132,32 @@ app.post("/api/ai-image", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message || "[User hanya mengirim gambar]", image });
 
     try {
-        const response = await axios.post(
-            "https://router.huggingface.co/models/Salesforce/blip-image-captioning-base",
-            {
-                inputs: image,           // base64 string
-                options: { wait_for_model: true }
-            },
-            {
-                headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` },
-                timeout: 60000
-            }
-        );
+        const prompt = `
+Buat deskripsi / caption singkat dari gambar ini:
+${message || ""}
+`;
 
-        // HF router kadang nested, safer pakai:
-        let reply = "❌ Gagal membaca hasil model";
-        if (response.data && response.data.generated_text) {
-            reply = response.data.generated_text;
-        } else if (Array.isArray(response.data) && response.data[0]?.generated_text) {
-            reply = response.data[0].generated_text;
-        }
+        const response = await openai.chat.completions.create({
+            model: "gpt-4.1-mini", // atau gpt-4.1 / gpt-4o-mini jika punya akses
+            messages: [
+                { role: "system", content: "Kamu adalah asisten AI yang membuat caption gambar singkat." },
+                { role: "user", content: prompt, name: "user" }
+            ],
+            modalities: ["text", "image"],
+            image: [image] // base64 string
+        });
 
+        const reply = response.choices[0].message.content.trim();
         chatMemory[sender].push({ role: "assistant", content: reply });
-        res.json({ reply, remaining: limits[sender], model_used: "HF vit-gpt2" });
+
+        res.json({ reply, remaining: limits[sender], model_used: "OpenAI GPT-4V" });
 
     } catch (err) {
-        console.error("❌ Error AI Image:", err.response?.data || err.message);
+        console.error("❌ Error AI Image (OpenAI):", err.response?.data || err.message);
         res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
     }
 });
+
 
 // ==========================================================
 // 🔥 API CHAT AI
@@ -241,4 +248,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
-
