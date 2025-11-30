@@ -115,7 +115,6 @@ app.post("/api/generate-title", async (req, res) => {
 
 // ===== Setup OpenAI =====
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-// ===== API IMAGE (Gambar + Caption / Perintah) =====
 app.post("/api/ai-image", async (req, res) => {
     const { sender, message, image } = req.body;
     if (!sender) return res.json({ reply: "❌ Sender wajib diisi", remaining: 0 });
@@ -139,16 +138,33 @@ app.post("/api/ai-image", async (req, res) => {
     try {
         const localPath = path.join(uploadsDir, filename);
 
-        // === Gunakan Responses API GPT-4V / GPT-4.1-mini ===
+        // === Format yang benar untuk Responses API GPT-4V ===
         const response = await openai.responses.create({
             model: "gpt-4.1-mini",
+            reasoning: { effort: "medium" }, // opsional
             input: [
-                { type: "input_text", text: message || "Buat caption singkat untuk gambar ini." },
-                { type: "input_image", image_data: fs.readFileSync(localPath, "base64") } // <- ini format benar
+                {
+                    role: "user",
+                    content: [
+                        { type: "text", text: message || "Buat caption singkat untuk gambar ini." },
+                        { type: "image", image_data: fs.readFileSync(localPath, "base64") }
+                    ]
+                }
             ]
         });
 
-        const reply = response.output_text || "❌ Gagal membuat caption.";
+        // Ambil teks jawaban
+        let reply = "";
+        if (response.output?.length) {
+            for (const msg of response.output) {
+                if (msg.content?.length) {
+                    for (const c of msg.content) {
+                        if (c.type === "text") reply += c.text;
+                    }
+                }
+            }
+        }
+        if (!reply) reply = "❌ Gagal membuat caption.";
 
         chatMemory[sender].push({ role: "assistant", content: reply });
 
@@ -224,4 +240,5 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
