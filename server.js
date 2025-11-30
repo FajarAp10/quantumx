@@ -124,7 +124,7 @@ app.post("/api/ai-image", async (req, res) => {
 
     try {
         const response = await axios.post(
-            "https://router.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+            "https://router.huggingface.co/models/Salesforce/blip-image-captioning-base",
             {
                 inputs: image,           // base64 string
                 options: { wait_for_model: true }
@@ -241,3 +241,4 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
