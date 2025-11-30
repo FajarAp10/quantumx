@@ -128,7 +128,7 @@ app.post("/api/ai-image", async (req, res) => {
     limits[sender] -= 1;
     writeLimits(limits);
 
-    // Simpan gambar dan dapatkan URL publik
+    // Simpan gambar & dapatkan URL publik
     const filename = `img_${Date.now()}.png`;
     const imageUrl = saveBase64Image(image, filename);
     if (!imageUrl) return res.json({ reply: "❌ Format gambar salah.", remaining: limits[sender] });
@@ -136,22 +136,15 @@ app.post("/api/ai-image", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message || "[User kirim gambar]", image });
 
     try {
-        // === GPT-4V Vision terbaru: gunakan URL gambar ===
+        // === GPT-4V terbaru: gunakan URL gambar, tanpa reasoning ===
         const response = await openai.responses.create({
             model: "gpt-4.1-mini",
-            reasoning: { effort: "medium" },
             input: [
                 {
                     role: "user",
                     content: [
-                        {
-                            type: "input_text",
-                            text: message || "Buat caption singkat untuk gambar ini."
-                        },
-                        {
-                            type: "input_image",
-                            image_url: imageUrl
-                        }
+                        { type: "input_text", text: message || "Buat caption singkat untuk gambar ini." },
+                        { type: "input_image", image_url: imageUrl }
                     ]
                 }
             ]
@@ -244,6 +237,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
