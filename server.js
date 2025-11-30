@@ -149,7 +149,7 @@ app.post("/api/ai-image", async (req, res) => {
                 {
                     role: "user",
                     content: [
-                        { type: "input_text", text: message || "Buat deskripsi singkat untuk gambar ini." },
+                        { type: "input_text", text: message || "Buat deskripsi singkat untuk gambar ini. Jika di gambar terdapat soal, kerjakan soal tersebut dan tulis jawaban yang jelas dan benar." },
                         { type: "input_image", image_url: imageUrl }
                     ]
                 }
