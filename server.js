@@ -115,6 +115,8 @@ app.post("/api/generate-title", async (req, res) => {
         res.json({ title: "Obrolan Baru" });
     }
 });
+
+
 // ===== Setup OpenAI =====
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.post("/api/ai-image", async (req, res) => {
@@ -170,7 +172,7 @@ app.post("/api/ai-image", async (req, res) => {
         chatMemory[sender].push({ role: "assistant", content: reply });
 
         console.log(`✅ Model GPT-4V berhasil untuk sender: ${sender}`);
-        console.log(`📝 Reply: ${reply}`);
+
 
         res.json({ reply, remaining: limits[sender], model_used: "GPT-4V" });
     } catch (err) {
@@ -214,6 +216,8 @@ app.post("/api/ai", async (req, res) => {
 
     for (const model of preferredModels) {
         try {
+
+            console.log(`💬 User (${sender}): ${message}`);
             console.log(`🔄 Mencoba model: ${model}`);
 
             const response = await axios.post(
@@ -227,7 +231,6 @@ app.post("/api/ai", async (req, res) => {
 
                // ✅ Log berhasil pakai model
             console.log(`✅ Model berhasil: ${model}`);
-            console.log(`📝 Reply: ${reply}`);
 
 
             return res.json({ reply, remaining: limits[sender], model_used: model, mode });
