@@ -100,7 +100,7 @@ app.post("/api/generate-title", async (req, res) => {
                 model: "llama-3.1-8b-instant",
                 messages: [{ role: "user", content: `Buat judul pendek maksimal 5 kata untuk topik ini. 
                 - Jika topik cuma "hai", "halo", atau "bro", judul menjadi "Sapaan Singkat". 
-                - Jika topik berupa gambar (topik = "Gambar"), buat judul yang relevan dengan gambar. 
+                - Jika topik cuma "Gambar" bikin aja judul "Gambar misteri" atau "Menampilkan Gambar". 
                 - Jangan tulis kata-kata seperti "Judul untuk topik ini". 
                 - Buat judul kreatif, ringkas, dan menarik. 
                 - Hanya tulis judulnya, tanpa penjelasan tambahan.
