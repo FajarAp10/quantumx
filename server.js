@@ -138,8 +138,10 @@ app.post("/api/ai-image", async (req, res) => {
         res.json({ reply, remaining: limits[sender], model_used: "HF vit-gpt2" });
 
     } catch (err) {
-        res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
+    console.error("❌ Error AI Image:", err.response?.data || err.message);
+    res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
     }
+
 });
 
 
