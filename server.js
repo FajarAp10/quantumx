@@ -145,6 +145,7 @@ app.post("/api/ai-image", async (req, res) => {
             ? `Jelaskan atau lakukan perintah ini untuk gambar ini: "${message}"`
             : "Buat caption singkat untuk gambar ini";
 
+        const localPath = path.join(uploadsDir, filename); // path lokal
         const response = await openai.chat.completions.create({
             model: "gpt-4.1-mini",
             messages: [
@@ -152,8 +153,9 @@ app.post("/api/ai-image", async (req, res) => {
                 { role: "user", content: prompt }
             ],
             modalities: ["text", "image"],
-            image: [{ role: "user", image: fs.readFileSync(imagePath, "base64") }]
-        });
+            image: [{ role: "user", image: fs.readFileSync(localPath, "base64") }]
+        }); 
+
 
         const reply = response.choices[0].message.content.trim();
         chatMemory[sender].push({ role: "assistant", content: reply });
