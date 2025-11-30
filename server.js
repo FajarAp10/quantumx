@@ -128,7 +128,6 @@ app.post("/api/ai-image", async (req, res) => {
     limits[sender] -= 1;
     writeLimits(limits);
 
-    // simpan gambar
     const filename = `img_${Date.now()}.png`;
     const imagePath = saveBase64Image(image, filename);
     if (!imagePath) return res.json({ reply: "❌ Format gambar salah.", remaining: limits[sender] });
@@ -138,7 +137,7 @@ app.post("/api/ai-image", async (req, res) => {
     try {
         const localPath = path.join(uploadsDir, filename);
 
-        // === Format yang benar untuk Responses API GPT-4V ===
+        // === GPT-4V Vision terbaru ===
         const response = await openai.responses.create({
             model: "gpt-4.1-mini",
             reasoning: { effort: "medium" }, // opsional
@@ -146,20 +145,20 @@ app.post("/api/ai-image", async (req, res) => {
                 {
                     role: "user",
                     content: [
-                        { type: "text", text: message || "Buat caption singkat untuk gambar ini." },
-                        { type: "image", image_data: fs.readFileSync(localPath, "base64") }
+                        { type: "input_text", text: message || "Buat caption singkat untuk gambar ini." },
+                        { type: "input_image", image_data: fs.readFileSync(localPath, "base64") }
                     ]
                 }
             ]
         });
 
-        // Ambil teks jawaban
+        // Ambil jawaban
         let reply = "";
         if (response.output?.length) {
             for (const msg of response.output) {
                 if (msg.content?.length) {
                     for (const c of msg.content) {
-                        if (c.type === "text") reply += c.text;
+                        if (c.type === "output_text") reply += c.text;
                     }
                 }
             }
@@ -240,5 +239,6 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
