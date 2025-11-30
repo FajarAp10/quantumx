@@ -98,11 +98,13 @@ app.post("/api/generate-title", async (req, res) => {
             "https://api.groq.com/openai/v1/chat/completions",
             {
                 model: "llama-3.1-8b-instant",
-                messages: [{ role: "user", content: `Buat judul pendek maksimal 5 kata untuk topik ini.
-                - Jika topik cuma "hai, halo, bro", judul jadi "Sapaan Singkat".
-                - Jika topik berupa gambar (ketik "Gambar"), buat judul yang relevan dengan gambar.
-                - Jangan tulis "Judul untuk topik ini", langsung tulis judul kreatif.
-                Topik: ${message}` }],
+                messages: [{ role: "user", content: `Buat judul pendek maksimal 5 kata untuk topik ini. 
+                - Jika topik cuma "hai", "halo", atau "bro", judul menjadi "Sapaan Singkat". 
+                - Jika topik berupa gambar (topik = "Gambar"), buat judul yang relevan dengan gambar. 
+                - Jangan tulis kata-kata seperti "Judul untuk topik ini". 
+                - Buat judul kreatif, ringkas, dan menarik. 
+                - Hanya tulis judulnya, tanpa penjelasan tambahan.
+                ${message}` }],
                 max_tokens: 20,
                 temperature: 0.2
             },
