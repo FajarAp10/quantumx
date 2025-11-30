@@ -123,7 +123,6 @@ app.post("/api/ai-image", async (req, res) => {
 
     initChatMemory(sender, "image");
 
-    // cek limit
     const limits = readLimits();
     if (!(sender in limits)) limits[sender] = 10;
     if (limits[sender] <= 0) return res.json({ reply: "⚠️ Limit habis.", remaining: 0 });
@@ -138,23 +137,17 @@ app.post("/api/ai-image", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message || "[User kirim gambar]", image });
 
     try {
-        const localPath = path.join(uploadsDir, filename); // path lokal
+        const localPath = path.join(uploadsDir, filename);
 
-        // === Panggil GPT-4V / GPT-4.1-mini terbaru ===
+        // === Gunakan Responses API GPT-4V / GPT-4.1-mini ===
         const response = await openai.responses.create({
             model: "gpt-4.1-mini",
             input: [
-                {
-                    role: "user",
-                    content: [
-                        { type: "input_text", text: message || "Buat caption singkat untuk gambar ini." },
-                        { type: "input_image", image: fs.readFileSync(localPath) }
-                    ]
-                }
+                { type: "input_text", text: message || "Buat caption singkat untuk gambar ini." },
+                { type: "input_image", image_data: fs.readFileSync(localPath, "base64") } // <- ini format benar
             ]
         });
 
-        // Ambil teks output
         const reply = response.output_text || "❌ Gagal membuat caption.";
 
         chatMemory[sender].push({ role: "assistant", content: reply });
@@ -231,3 +224,4 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
