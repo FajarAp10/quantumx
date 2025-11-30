@@ -112,7 +112,6 @@ app.post("/api/generate-title", async (req, res) => {
         res.json({ title: "Obrolan Baru" });
     }
 });
-
 // ===== Setup OpenAI =====
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.post("/api/ai-image", async (req, res) => {
@@ -136,6 +135,8 @@ app.post("/api/ai-image", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message || "[User kirim gambar]", image });
 
     try {
+        console.log(`🔄 Memproses gambar untuk sender: ${sender}, URL: ${imageUrl}`);
+
         // === GPT-4V terbaru: gunakan URL gambar, tanpa reasoning ===
         const response = await openai.responses.create({
             model: "gpt-4.1-mini",
@@ -143,7 +144,7 @@ app.post("/api/ai-image", async (req, res) => {
                 {
                     role: "user",
                     content: [
-                        { type: "input_text", text: message || "Buat caption singkat untuk gambar ini." },
+                        { type: "input_text", text: message || "Buat deskripsi singkat untuk gambar ini." },
                         { type: "input_image", image_url: imageUrl }
                     ]
                 }
@@ -164,6 +165,9 @@ app.post("/api/ai-image", async (req, res) => {
         if (!reply) reply = "❌ Gagal membuat caption.";
 
         chatMemory[sender].push({ role: "assistant", content: reply });
+
+        console.log(`✅ Model GPT-4V berhasil untuk sender: ${sender}`);
+        console.log(`📝 Reply: ${reply}`);
 
         res.json({ reply, remaining: limits[sender], model_used: "GPT-4V" });
     } catch (err) {
@@ -217,6 +221,11 @@ app.post("/api/ai", async (req, res) => {
 
             const reply = response.data.choices[0].message.content.trim();
             chatMemory[sender].push({ role: "assistant", content: reply });
+
+               // ✅ Log berhasil pakai model
+            console.log(`✅ Model berhasil: ${model}`);
+            console.log(`📝 Reply: ${reply}`);
+
 
             return res.json({ reply, remaining: limits[sender], model_used: model, mode });
         } catch (err) {
