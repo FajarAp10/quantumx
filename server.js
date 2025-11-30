@@ -116,45 +116,55 @@ app.post("/api/generate-title", async (req, res) => {
 // ===== Setup OpenAI =====
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// ===== API IMAGE =====
+// ===== API IMAGE (Gambar + Caption / Perintah) =====
 app.post("/api/ai-image", async (req, res) => {
     const { sender, message, image } = req.body;
-    if (!image) return res.json({ reply: "❌ Tidak ada gambar yang dikirim." });
+    if (!sender) return res.json({ reply: "❌ Sender wajib diisi", remaining: 0 });
+    if (!image) return res.json({ reply: "❌ Tidak ada gambar yang dikirim", remaining: 0 });
 
     initChatMemory(sender, "image");
 
+    // cek limit
     const limits = readLimits();
     if (!(sender in limits)) limits[sender] = 10;
     if (limits[sender] <= 0) return res.json({ reply: "⚠️ Limit habis.", remaining: 0 });
     limits[sender] -= 1;
     writeLimits(limits);
 
+    // simpan gambar
+    const filename = `img_${Date.now()}.png`;
+    const imagePath = saveBase64Image(image, filename);
+    if (!imagePath) return res.json({ reply: "❌ Format gambar salah.", remaining: limits[sender] });
+
+    // simpan chat memory
     chatMemory[sender].push({ role: "user", content: message || "[User kirim gambar]", image });
 
-    const filename = `img_${Date.now()}.png`;
-    const imageURL = saveBase64Image(image, filename);
-    if (!imageURL) return res.json({ reply: "❌ Format gambar salah.", remaining: limits[sender] });
-
     try {
-        const prompt = `Buat caption singkat untuk gambar ini: ${message || ""}\nURL: ${imageURL}`;
+        // format prompt
+        const prompt = message
+            ? `Jelaskan atau lakukan perintah ini untuk gambar ini: "${message}"`
+            : "Buat caption singkat untuk gambar ini";
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-4.1-mini",
             messages: [
-                { role: "system", content: "Kamu adalah asisten AI yang membuat caption gambar singkat." },
+                { role: "system", content: "Kamu adalah AI yang bisa membaca gambar dan menjawab sesuai perintah user." },
                 { role: "user", content: prompt }
             ],
+            modalities: ["text", "image"],
+            image: [{ role: "user", image: fs.readFileSync(imagePath, "base64") }]
         });
 
         const reply = response.choices[0].message.content.trim();
         chatMemory[sender].push({ role: "assistant", content: reply });
 
-        res.json({ reply, remaining: limits[sender], model_used: "OpenAI GPT" });
+        res.json({ reply, remaining: limits[sender], model_used: "GPT-4V" });
     } catch (err) {
-        console.error("❌ Error AI Image (OpenAI):", err.message);
+        console.error("❌ Error AI Image (GPT-4V):", err.message);
         res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
     }
 });
+
 
 // ===== API CHAT =====
 app.post("/api/ai", async (req, res) => {
