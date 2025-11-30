@@ -5,7 +5,8 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 import { chatMemory, initChatMemory, resetChatMemory } from "./memory.js";
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
+
 
 
 
