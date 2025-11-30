@@ -128,10 +128,11 @@ app.post("/api/ai-image", async (req, res) => {
 
     try {
         const response = await axios.post(
-            "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
-            { inputs: image },
-            { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
+        "https://router.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+        { inputs: image },
+        { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
         );
+
 
         const reply = response.data[0].generated_text;
         chatMemory[sender].push({ role: "assistant", content: reply });
