@@ -172,7 +172,6 @@ app.post("/api/ai-image", async (req, res) => {
     }
 });
 
-// ===== API CHAT =====
 app.post("/api/ai", async (req, res) => {
     const { sender, message, reset, mode } = req.body;
 
@@ -182,17 +181,21 @@ app.post("/api/ai", async (req, res) => {
     const limits = readLimits();
     if (!(sender in limits)) limits[sender] = 10;
 
-    if (message === "") return res.json({ reply: "", remaining: limits[sender] });
-
-    if (limits[sender] <= 0) {
+    if (!message) return res.json({ reply: "", remaining: limits[sender] });
+    if (limits[sender] <= 0)
         return res.json({ reply: "⚠️ Limit chat kamu habis. Hubungi Admin.", remaining: 0 });
-    }
 
     limits[sender] -= 1;
     writeLimits(limits);
 
+    // push user message ke memory (mode untuk UI, tapi jangan kirim ke Groq)
     chatMemory[sender].push({ role: "user", content: message });
-    const recentMessages = chatMemory[sender].slice(-20);
+
+    // ambil recent messages murni untuk Groq
+    const recentMessages = chatMemory[sender].slice(-20).map(msg => ({
+        role: msg.role,
+        content: msg.content
+    }));
 
     const preferredModels = [
         "moonshotai/kimi-k2-instruct",
@@ -212,12 +215,10 @@ app.post("/api/ai", async (req, res) => {
                 { headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" }, timeout: 25000 }
             );
 
-            console.log(`✅ Model berhasil: ${model}`);
-
             const reply = response.data.choices[0].message.content.trim();
             chatMemory[sender].push({ role: "assistant", content: reply });
 
-            return res.json({ reply, remaining: limits[sender], model_used: model });
+            return res.json({ reply, remaining: limits[sender], model_used: model, mode });
         } catch (err) {
             console.log(`❌ Model gagal ${model}:`, err.response?.status || err.message);
             if (err.response?.status === 429) continue;
@@ -230,13 +231,14 @@ app.post("/api/ai", async (req, res) => {
         "Lagi error, coba lagi ya...",
         "Tahan bentar, server padat..."
     ];
-    res.json({ reply: fallback[Math.floor(Math.random() * fallback.length)], remaining: limits[sender] });
+    res.json({ reply: fallback[Math.floor(Math.random() * fallback.length)], remaining: limits[sender], mode });
 });
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
