@@ -107,44 +107,50 @@ app.post("/api/delete-user", (req, res) => {
         return res.json({ success: false, message: "User tidak ditemukan." });
     }
 });
-
 app.post("/api/ai-image", async (req, res) => {
     const { sender, message, image } = req.body;
 
     if (!image) return res.json({ reply: "❌ Tidak ada gambar yang dikirim." });
 
-    // inisialisasi memory
     initChatMemory(sender, "image");
 
-    // cek limit
     const limits = readLimits();
     if (!(sender in limits)) limits[sender] = 10;
     if (limits[sender] <= 0) return res.json({ reply: "⚠️ Limit habis.", remaining: 0 });
     limits[sender] -= 1;
     writeLimits(limits);
 
-    // simpan message user
     chatMemory[sender].push({ role: "user", content: message || "[User hanya mengirim gambar]", image });
 
     try {
         const response = await axios.post(
-        "https://router.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
-        { inputs: image },
-        { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
+            "https://router.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+            {
+                inputs: image,           // base64 string
+                options: { wait_for_model: true }
+            },
+            {
+                headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` },
+                timeout: 60000
+            }
         );
 
+        // HF router kadang nested, safer pakai:
+        let reply = "❌ Gagal membaca hasil model";
+        if (response.data && response.data.generated_text) {
+            reply = response.data.generated_text;
+        } else if (Array.isArray(response.data) && response.data[0]?.generated_text) {
+            reply = response.data[0].generated_text;
+        }
 
-        const reply = response.data[0].generated_text;
         chatMemory[sender].push({ role: "assistant", content: reply });
         res.json({ reply, remaining: limits[sender], model_used: "HF vit-gpt2" });
 
     } catch (err) {
-    console.error("❌ Error AI Image:", err.response?.data || err.message);
-    res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
+        console.error("❌ Error AI Image:", err.response?.data || err.message);
+        res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
     }
-
 });
-
 
 // ==========================================================
 // 🔥 API CHAT AI
