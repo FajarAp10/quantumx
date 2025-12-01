@@ -198,22 +198,6 @@ Kamu adalah asisten AI yang pintar banget. Analisis gambar yang dikirim.
     }
 });
 
-function trimMessages(messages, maxChars = 3000) {
-    let total = 0;
-    let trimmed = [];
-
-    for (let i = messages.length - 1; i >= 0; i--) {
-        const m = messages[i];
-        const len = m.content.length;
-
-        if (total + len > maxChars) break;
-
-        trimmed.unshift(m);
-        total += len;
-    }
-
-    return trimmed;
-}
 
 
 app.post("/api/ai", async (req, res) => {
@@ -236,22 +220,10 @@ app.post("/api/ai", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message });
 
     // ambil recent messages murni untuk Groq
-    let recentMessages = chatMemory[sender].map(msg => ({
-    role: msg.role,
-    content: msg.content
-}));
-
-// 🔥 WAJIB: auto-trim supaya TIDAK PERNAH 413 LAGI
-recentMessages = trimMessages(recentMessages, 2500);
-
-// Jika masih kepanjangan → fallback
-if (recentMessages.length === 0) {
-    recentMessages = [{
-        role: "user",
-        content: message
-    }];
-}
-
+    const recentMessages = chatMemory[sender].slice(-20).map(msg => ({
+        role: msg.role,
+        content: msg.content
+    }));
 
     const preferredModels = [
         "moonshotai/kimi-k2-instruct",
