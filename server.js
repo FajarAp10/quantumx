@@ -218,7 +218,7 @@ app.post("/api/ai", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message });
 
     // ambil recent messages murni untuk Groq
-    const recentMessages = chatMemory[sender].slice(-20).map(msg => ({
+    const recentMessages = chatMemory[sender].slice(-5).map(msg => ({
         role: msg.role,
         content: msg.content
     }));
