@@ -38,7 +38,7 @@ function writeLimits(data) {
     fs.writeFileSync(limitsFile, JSON.stringify(data, null, 2));
 }
 
-// 🗑 Hapus entry 'web-user' lama
+// 🗑 Hapus entry 'web-user' lam
 const limits = readLimits();
 if ("web-user" in limits) {
     delete limits["web-user"];
@@ -269,6 +269,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
