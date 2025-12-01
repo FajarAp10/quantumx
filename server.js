@@ -10,7 +10,7 @@ import OpenAI from "openai";
 dotenv.config();
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "50mb" }));
+app.use(express.json({ limit: "300mb" }));
 
 // ===== Pastikan folder uploads ada =====
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -197,8 +197,6 @@ Kamu adalah asisten AI yang pintar banget. Analisis gambar yang dikirim.
         res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
     }
 });
-
-
 
 app.post("/api/ai", async (req, res) => {
     const { sender, message, reset, mode } = req.body;
