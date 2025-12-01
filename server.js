@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
-import { chatMemory, initChatMemory, resetChatMemory, basePromptMap } from "./memory.js";
+import { getRecentMessages } from "./memory.js";
 import OpenAI from "openai";
 
 dotenv.config();
@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "500mb" }));
 
-// ===== Pastikan folder uploads ada ====
+// ===== Pastikan folder uploads ada =====
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 
@@ -217,16 +217,7 @@ app.post("/api/ai", async (req, res) => {
     // push user message ke memory (mode untuk UI, tapi jangan kirim ke Groq)
     chatMemory[sender].push({ role: "user", content: message });
 
-    const recentMessages = [
-    {
-        role: "system",
-        content: basePromptMap[sender]   // <-- System prompt SELALU ADA di awal
-    },
-    ...chatMemory[sender].slice(-5).map(msg => ({
-        role: msg.role,
-        content: msg.content
-    }))
-];
+    const recentMessages = getRecentMessages(sender, 5);
 
 
     const preferredModels = [
@@ -276,7 +267,6 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
-
 
 
 
