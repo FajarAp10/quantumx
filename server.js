@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
-import { getRecentMessages } from "./memory.js";
+import { chatMemory, initChatMemory, resetChatMemory, getRecentMessages } from "./memory.js";
 import OpenAI from "openai";
 
 dotenv.config();
