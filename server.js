@@ -151,7 +151,21 @@ app.post("/api/ai-image", async (req, res) => {
                 {
                     role: "user",
                     content: [
-                        { type: "input_text", text: message || "Buat deskripsi singkat untuk gambar ini. Jika di gambar terdapat soal, kerjakan soal tersebut dan tulis jawaban yang jelas dan benar." },
+                        { type: "input_text", text: message || `
+Kamu adalah asisten AI yang pintar banget. Analisis gambar yang dikirim.
+
+- Jika gambar berisi **soal** (misal matematika, fisika, kimia):
+  1. Jelaskan soal dengan singkat.
+  2. Tulis langkah-langkah pengerjaan secara jelas.
+  3. Tunjukkan rumus yang digunakan.
+  4. Berikan jawaban akhir dengan benar.
+
+- Jika gambar **bukan soal**, buat deskripsi gambar secara ringkas dan informatif.
+
+- Jika ada pertanyaan tertulis di gambar, jawab **dengan benar**.
+- Jangan menambahkan informasi yang tidak ada di gambar.
+- Tulis output dengan bahasa Indonesia yang jelas dan mudah dipahami.
+`;},
                         { type: "input_image", image_url: imageUrl }
                     ]
                 }
@@ -255,6 +269,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
