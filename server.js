@@ -58,6 +58,18 @@ function saveBase64Image(base64, filename) {
     return `https://quantumx.zeabur.app/uploads/${filename}`; // ganti domain sesuai Zeabur
 }
 
+function autoNotice(reply) {
+    if (!reply) return reply;
+
+    // kalau lebih dari 1000 char → tambahin notice
+    if (reply.length > 1000) {
+        reply += "\n\n---\nJawaban masih panjang. Ketik **lanjutkan** untuk melanjutkan.";
+    }
+
+    return reply;
+}
+
+
 // ===== API DASHBOARD =====
 app.get("/api/users", (req, res) => {
     const limits = readLimits();
@@ -218,10 +230,15 @@ app.post("/api/ai", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message });
 
     // ambil recent messages murni untuk Groq
-    const recentMessages = chatMemory[sender].slice(-20).map(msg => ({
+    const recentMessages = chatMemory[sender]
+    .slice(-8) // KURANGI HISTORY
+    .map(msg => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content.length > 3000 
+            ? msg.content.slice(0, 3000) + " ...[trimmed]"
+            : msg.content
     }));
+
 
     const preferredModels = [
         "moonshotai/kimi-k2-instruct",
@@ -239,11 +256,13 @@ app.post("/api/ai", async (req, res) => {
 
             const response = await axios.post(
                 "https://api.groq.com/openai/v1/chat/completions",
-                { model, messages: recentMessages, temperature: 0.9, max_tokens: 7000, stream: false },
+                { model, messages: recentMessages, temperature: 0.9, max_tokens: 5000, stream: false },
                 { headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" }, timeout: 25000 }
             );
 
-            const reply = response.data.choices[0].message.content.trim();
+            let reply = response.data.choices[0].message.content.trim();
+            reply = autoNotice(reply);
+
             chatMemory[sender].push({ role: "assistant", content: reply });
 
                // ✅ Log berhasil pakai model
