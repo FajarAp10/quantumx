@@ -154,15 +154,15 @@ app.post("/api/ai-image", async (req, res) => {
                         { type: "input_text", text: message || `
 Kamu adalah asisten AI yang pintar banget. Analisis gambar yang dikirim.
 
-- Jika gambar berisi **soal** (misal matematika, fisika, kimia):
+- Jika gambar berisi *soal* (misal matematika, fisika, kimia, pilihan ganda, uraian):
   1. Jelaskan soal dengan singkat.
   2. Tulis langkah-langkah pengerjaan secara jelas.
   3. Tunjukkan rumus yang digunakan.
   4. Berikan jawaban akhir dengan benar.
 
-- Jika gambar **bukan soal**, buat deskripsi gambar secara ringkas dan informatif.
+- Jika gambar *bukan soal*, buat deskripsi gambar secara ringkas dan informatif.
 
-- Jika ada pertanyaan tertulis di gambar, jawab **dengan benar**.
+- Jika ada pertanyaan tertulis di gambar, jawab *dengan benar*.
 - Jangan menambahkan informasi yang tidak ada di gambar.
 - Tulis output dengan bahasa Indonesia yang jelas dan mudah dipahami.
 `;},
@@ -269,6 +269,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
