@@ -165,7 +165,7 @@ Kamu adalah asisten AI yang pintar banget. Analisis gambar yang dikirim.
 - Jika ada pertanyaan tertulis di gambar, jawab *dengan benar*.
 - Jangan menambahkan informasi yang tidak ada di gambar.
 - Tulis output dengan bahasa Indonesia yang jelas dan mudah dipahami.
-`;},
+`},
                         { type: "input_image", image_url: imageUrl }
                     ]
                 }
@@ -269,6 +269,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
