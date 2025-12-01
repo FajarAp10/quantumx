@@ -217,11 +217,17 @@ app.post("/api/ai", async (req, res) => {
     // push user message ke memory (mode untuk UI, tapi jangan kirim ke Groq)
     chatMemory[sender].push({ role: "user", content: message });
 
-    // ambil recent messages murni untuk Groq
-    const recentMessages = chatMemory[sender].slice(-5).map(msg => ({
+    const recentMessages = [
+    {
+        role: "system",
+        content: basePromptMap[sender]   // <-- System prompt SELALU ADA di awal
+    },
+    ...chatMemory[sender].slice(-5).map(msg => ({
         role: msg.role,
         content: msg.content
-    }));
+    }))
+];
+
 
     const preferredModels = [
         "moonshotai/kimi-k2-instruct",
