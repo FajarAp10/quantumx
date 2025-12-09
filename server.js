@@ -205,11 +205,43 @@ app.post("/api/ai", async (req, res) => {
     initChatMemory(sender, mode);
 
     const limits = readLimits();
-    if (!(sender in limits)) limits[sender] = 0;
+    if (!(sender in limits)) limits[sender] = 10;
 
     if (!message) return res.json({ reply: "", remaining: limits[sender] });
-    if (limits[sender] <= 0)
-    return res.json({ reply: "LIMIT_HABIS", remaining: 0 });
+    if (limits[sender] <= 0) {
+    return res.json({
+        reply: `
+            <div style="
+                text-align: center;
+                max-width: 240px;
+                margin: 0 auto;
+                line-height: 1.5;
+            ">
+                ⚠️ Limit chat kamu habis.<br><br>
+                <a href="https://wa.me/6281227298109?text=Halo%20Developer,%20saya%20mau%20isi%20limit"
+                   style="
+                       display: inline-block;
+                       padding: 6px 14px;
+                       background: #3b82f6;
+                       color: #fff;
+                       border-radius: 8px;
+                       font-size: 14px;
+                       font-weight: 600;
+                       text-decoration: none;
+                       transition: 0.2s ease;
+                   "
+                   target="_blank"
+                   onmousedown="this.style.transform='scale(0.95)'"
+                   onmouseup="this.style.transform='scale(1)'"
+                   onmouseout="this.style.transform='scale(1)'"
+                >
+                    Hubungi Developer
+                </a>
+            </div>
+        `,
+        remaining: 0
+    });
+}
 
 
     limits[sender] -= 1;
