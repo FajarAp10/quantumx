@@ -208,27 +208,8 @@ app.post("/api/ai", async (req, res) => {
     if (!(sender in limits)) limits[sender] = 0;
 
     if (!message) return res.json({ reply: "", remaining: limits[sender] });
-if (limits[sender] <= 0) {
-    return res.json({
-        reply: `
-⚠️ Limit chat kamu habis.
-
-<button onclick="window.open('https://wa.me/6281227298109?text=Halo%20Developer,%20saya%20mau%20isi%20limits', '_blank')" 
-style="
-padding: 10px 16px;
-background:#007bff;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin-top:10px;
-">
-📞 Hubungi Developer
-</button>
-`,
-        remaining: 0
-    });
-}
+    if (limits[sender] <= 0)
+    return res.json({ reply: "LIMIT_HABIS", remaining: 0 });
 
 
     limits[sender] -= 1;
