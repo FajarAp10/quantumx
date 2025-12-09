@@ -129,7 +129,7 @@ app.post("/api/ai-image", async (req, res) => {
     initChatMemory(sender, "image");
 
     const limits = readLimits();
-    if (!(sender in limits)) limits[sender] = 0;
+    if (!(sender in limits)) limits[sender] = 10;
     if (limits[sender] <= 0) return res.json({ reply: "⚠️ Limit chat kamu habis. Hubungi Admin.", remaining: 0 });
     limits[sender] -= 1;
     writeLimits(limits);
@@ -205,7 +205,7 @@ app.post("/api/ai", async (req, res) => {
     initChatMemory(sender, mode);
 
     const limits = readLimits();
-    if (!(sender in limits)) limits[sender] = 10;
+    if (!(sender in limits)) limits[sender] = 0;
 
     if (!message) return res.json({ reply: "", remaining: limits[sender] });
     if (limits[sender] <= 0) {
@@ -300,8 +300,6 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
-
-
 
 
 
