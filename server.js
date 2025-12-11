@@ -213,25 +213,29 @@ app.post("/api/ai", async (req, res) => {
         reply: `
             <div style="
                 text-align: center;
-                max-width: 240px;
-                margin: 0 auto;
-                line-height: 1.5;
+                max-width: 200px;
+                margin: 10px auto;
+                padding: 10px 0;
+                font-size: 14px;
+                line-height: 1.4;
+                display: inline-block;
             ">
-                ⚠️ Limit chat kamu habis.<br><br>
+                ⚠️ Limit chat kamu habis.
+                <br><br>
                 <a href="https://wa.me/6281227298109?text=Halo%20Developer,%20saya%20mau%20isi%20limit"
                    style="
                        display: inline-block;
-                       padding: 6px 14px;
+                       padding: 6px 12px;
                        background: #3b82f6;
-                       color: #fff;
-                       border-radius: 8px;
-                       font-size: 14px;
+                       color: white;
+                       border-radius: 6px;
+                       font-size: 13px;
                        font-weight: 600;
                        text-decoration: none;
-                       transition: 0.2s ease;
+                       transition: 0.15s ease;
                    "
                    target="_blank"
-                   onmousedown="this.style.transform='scale(0.95)'"
+                   onmousedown="this.style.transform='scale(0.92)'"
                    onmouseup="this.style.transform='scale(1)'"
                    onmouseout="this.style.transform='scale(1)'"
                 >
@@ -242,6 +246,7 @@ app.post("/api/ai", async (req, res) => {
         remaining: 0
     });
 }
+
 
 
     limits[sender] -= 1;
@@ -300,6 +305,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
