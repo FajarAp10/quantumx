@@ -208,44 +208,28 @@ app.post("/api/ai", async (req, res) => {
     if (!(sender in limits)) limits[sender] = 0;
 
     if (!message) return res.json({ reply: "", remaining: limits[sender] });
-    if (limits[sender] <= 0) {
+   if (limits[sender] <= 0) {
     return res.json({
         reply: `
-            <div style="
-                text-align: center;
-                max-width: 200px;
-                margin: 10px auto;
-                padding: 10px 0;
-                font-size: 14px;
-                line-height: 1.4;
-                display: inline-block;
-            ">
-                ⚠️ Limit chat kamu habis.
-                <br><br>
-                <a href="https://wa.me/6281227298109?text=Halo%20Developer,%20saya%20mau%20isi%20limit"
-                   style="
-                       display: inline-block;
-                       padding: 6px 12px;
-                       background: #3b82f6;
-                       color: white;
-                       border-radius: 6px;
-                       font-size: 13px;
-                       font-weight: 600;
-                       text-decoration: none;
-                       transition: 0.15s ease;
-                   "
-                   target="_blank"
-                   onmousedown="this.style.transform='scale(0.92)'"
-                   onmouseup="this.style.transform='scale(1)'"
-                   onmouseout="this.style.transform='scale(1)'"
-                >
-                    Hubungi Developer
-                </a>
-            </div>
+            ⚠️ Limit chat kamu habis.<br><br>
+            <a href="https://wa.me/6281227298109?text=Halo%20Developer,%20saya%20mau%20isi%20limit"
+               style="
+                   display:inline-block;
+                   padding:8px 16px;
+                   background:#3b82f6;
+                   color:#fff;
+                   border-radius:8px;
+                   font-weight:600;
+                   text-decoration:none;
+               "
+               target="_blank">
+                Hubungi Developer
+            </a>
         `,
         remaining: 0
     });
 }
+
 
 
 
@@ -305,6 +289,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
+
 
 
 
