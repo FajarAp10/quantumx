@@ -208,11 +208,16 @@ app.post("/api/ai", async (req, res) => {
     if (!(sender in limits)) limits[sender] = 0;
 
     if (!message) return res.json({ reply: "", remaining: limits[sender] });
-    if (limits[sender] <= 0) {
-    return res.json({
-        reply: `⚠️ Limit chat kamu habis.`,
-        remaining: 0
+    if(response.remaining === 0){
+    // chat pertama: teks limit habis
+    addMessage("bot", "⚠️ Limit chat kamu habis.").then(() => {
+        // chat kedua: tombol hubungi admin
+        appendAdminButtonMessage();
     });
+
+    // jangan lanjut ke API lagi
+    sendBtn.disabled = false;
+    return;
 }
 
 
@@ -224,7 +229,6 @@ app.post("/api/ai", async (req, res) => {
     chatMemory[sender].push({ role: "user", content: message });
 
     const recentMessages = getRecentMessages(sender, 5);
-
 
     const preferredModels = [
         "moonshotai/kimi-k2-instruct",
@@ -273,16 +277,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
