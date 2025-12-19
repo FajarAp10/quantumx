@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "500mb" }));
 
-// ===== Pastikan folder uploads ada ====
+// ===== Pastikan folder uploads ada =====
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 
@@ -129,8 +129,29 @@ app.post("/api/ai-image", async (req, res) => {
     initChatMemory(sender, "image");
 
     const limits = readLimits();
-    if (!(sender in limits)) limits[sender] = 10;
-    if (limits[sender] <= 0) return res.json({ reply: "⚠️ Limit chat kamu habis. Hubungi Admin.", remaining: 0 });
+    if (!(sender in limits)) limits[sender] = 0;
+  if (limits[sender] <= 0) {
+    return res.json({
+        replies: [
+            {
+                type: "text",
+                content: "⚠️ Limit chat kamu habis."
+            },
+            {
+                type: "buttons",
+                content: `
+<div class="limit-buttons">
+  <button onclick="window.open('https://wa.me/6283836348226?text=Halo%20admin%2C%20saya%20${encodeURIComponent(sender)}%20mau%20isi%20limit.', '_blank')">
+    💬 Hubungi Admin
+  </button>
+</div>
+`
+            }
+        ],
+        remaining: 0
+    });
+}
+
     limits[sender] -= 1;
     writeLimits(limits);
 
@@ -190,12 +211,12 @@ Kamu adalah asisten AI yang pintar banget. Analisis gambar yang dikirim.
         chatMemory[sender].push({ role: "assistant", content: reply });
 
         // 🔥 TAMBAHAN PENTING (INI KUNCINYA)
-        chatMemory[sender].push({
-            role: "system",
-            content: `KONTEKS GAMBAR SEBELUMNYA:
-        ${reply}
-        Gunakan konteks ini jika user bertanya lanjutan.`
-        });
+      chatMemory[sender].push({
+  role: "system",
+  content: `Deskripsi gambar sebelumnya: ${reply}`
+});
+
+
 
         console.log(`✅ Model GPT-4V berhasil untuk sender: ${sender}`);
 
@@ -249,7 +270,13 @@ app.post("/api/ai", async (req, res) => {
     // push user message ke memory (mode untuk UI, tapi jangan kirim ke Groq)
     chatMemory[sender].push({ role: "user", content: message });
 
-    const recentMessages = getRecentMessages(sender, 5);
+    const recentMessages = getRecentMessages(sender, 5)
+  .filter(m => typeof m.content === "string")
+  .map(m => ({
+    role: m.role === "bot" ? "assistant" : m.role,
+    content: m.content
+  }));
+
 
     const preferredModels = [
         "moonshotai/kimi-k2-instruct",
@@ -298,4 +325,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log("🚀 Server berjalan di port " + PORT);
 });
-
