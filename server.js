@@ -217,16 +217,14 @@ app.post("/api/ai", async (req, res) => {
             },
             {
                 type: "buttons",
-                content: `
+         content: `
 <div class="limit-buttons">
-  <button onclick="window.location.href='https://wa.me/628xxxx'">
+  <button onclick="window.open('https://wa.me/6283836348226?text=Halo%20admin%2C%20saya%20${encodeURIComponent(sender)}%20mau%20isi%20limit.', '_blank')">
     💬 Hubungi Admin
-  </button>
-  <button onclick="window.location.href='settings.html'">
-    ⚙️ Upgrade / Pengaturan
   </button>
 </div>
 `
+
             }
         ],
         remaining: 0
