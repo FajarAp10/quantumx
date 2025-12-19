@@ -208,17 +208,31 @@ app.post("/api/ai", async (req, res) => {
     if (!(sender in limits)) limits[sender] = 0;
 
     if (!message) return res.json({ reply: "", remaining: limits[sender] });
-    if(response.remaining === 0){
-    // chat pertama: teks limit habis
-    addMessage("bot", "⚠️ Limit chat kamu habis.").then(() => {
-        // chat kedua: tombol hubungi admin
-        appendAdminButtonMessage();
+    if (limits[sender] <= 0) {
+    return res.json({
+        replies: [
+            {
+                type: "text",
+                content: "⚠️ Limit chat kamu habis."
+            },
+            {
+                type: "buttons",
+                content: `
+<div class="limit-buttons">
+  <button onclick="window.location.href='https://wa.me/628xxxx'">
+    💬 Hubungi Admin
+  </button>
+  <button onclick="window.location.href='settings.html'">
+    ⚙️ Upgrade / Pengaturan
+  </button>
+</div>
+`
+            }
+        ],
+        remaining: 0
     });
-
-    // jangan lanjut ke API lagi
-    sendBtn.disabled = false;
-    return;
 }
+
 
 
 
