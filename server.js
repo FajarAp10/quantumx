@@ -186,12 +186,21 @@ Kamu adalah asisten AI yang pintar banget. Analisis gambar yang dikirim.
         }
         if (!reply) reply = "❌ Gagal membuat caption.";
 
+        // simpan jawaban GPT (tetap)
         chatMemory[sender].push({ role: "assistant", content: reply });
+
+        // 🔥 TAMBAHAN PENTING (INI KUNCINYA)
+        chatMemory[sender].push({
+            role: "system",
+            content: `KONTEKS GAMBAR SEBELUMNYA:
+        ${reply}
+        Gunakan konteks ini jika user bertanya lanjutan.`
+        });
 
         console.log(`✅ Model GPT-4V berhasil untuk sender: ${sender}`);
 
-
         res.json({ reply, remaining: limits[sender], model_used: "GPT-4V" });
+
     } catch (err) {
         console.error("❌ Error AI Image (GPT-4V):", err.message);
         res.json({ reply: "❌ Gagal memproses gambar.", remaining: limits[sender] });
